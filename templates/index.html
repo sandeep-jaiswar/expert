@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Analysis App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #2C3E50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .loading {
+            text-align: center;
+            font-size: 20px;
+            color: #3498db;
+            display: none;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .chart-container {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            input, select, button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Stock Analysis App</h1>
+    </header>
+
+    <div class="container">
+        <form id="stock-form">
+            <div class="form-group">
+                <label for="ticker">Stock Ticker:</label>
+                <input type="text" id="ticker" name="ticker" required>
+            </div>
+            <div class="form-group">
+                <label for="period">Period:</label>
+                <select id="period" name="period">
+                    <option value="1mo">1 Month</option>
+                    <option value="3mo">3 Months</option>
+                    <option value="6mo">6 Months</option>
+                    <option value="1y">1 Year</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="interval">Interval:</label>
+                <select id="interval" name="interval">
+                    <option value="1d">Daily</option>
+                    <option value="1wk">Weekly</option>
+                    <option value="1mo">Monthly</option>
+                </select>
+            </div>
+            <button type="submit">Analyze</button>
+        </form>
+
+        <div class="loading" id="loading">Loading chart...</div>
+        <div class="chart-container" id="chart-container"></div>
+        <div class="error" id="error-message"></div>
+    </div>
+
+    <script>
+        document.getElementById('stock-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            // Show loading indicator
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('chart-container').innerHTML = '';
+            document.getElementById('error-message').innerHTML = '';
+
+            const formData = new FormData(this);
+
+            fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading indicator
+                document.getElementById('loading').style.display = 'none';
+
+                if (data.success) {
+                    const chartContainer = document.getElementById('chart-container');
+                    chartContainer.innerHTML = `<iframe src="${data.chart_url}" width="100%" height="800px" frameborder="0"></iframe>`;
+                } else {
+                    document.getElementById('error-message').innerHTML = 'Error: ' + data.error;
+                }
+            })
+            .catch(err => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error-message').innerHTML = 'An unexpected error occurred.';
+            });
+        });
+    </script>
+</body>
+</html>
